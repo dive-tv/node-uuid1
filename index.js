@@ -1,132 +1,96 @@
-function randomInt(low, high) {
-    return Math.floor(Math.random() * (high - low) + low);
-}
-  
-function digits(val, digits) {
+var random = require('./random');
+var repeat = require('repeat-string');
+
+function digits(value, bytes) {
     
-    // Convert the number to binary string
-    var val_binary_string = val.toString(2);
+    // Generate the mask to select the less significative bits
+    var mask = parseInt(repeat('1', bytes * 4), 2);
     
-    var string_value = "";
-    for (var i = 0; i < digits; i++) {
-        string_value = string_value + "0000";
-    }
-    string_value = string_value + val_binary_string;    
-    string_value = "1" + string_value.substring(string_value.length - (4 * digits), string_value.length);
+    // Generate a secondary mask used to fill with zeros from the left    
+    var secondMask = parseInt('1' + repeat('0', bytes * 4), 2);
     
-    return parseInt(string_value, 2).toString(16).substring(1);   
+    return ((value & mask) | secondMask).toString(16).substring(1);
 }
 
-exports.uuid1 = function() {
+function getTimeBasedBlocks(millis) {
+    
+    // Convert millis to nanos
+    var nanos = millis * 10000;
+    
+    // Add random nanoseconds
+    var randomNanos = random.randomInt(0, 10000);
+    nanos += randomNanos;
+    
+    // Convert the nanos to binary string
+    var nanosBinString = nanos.toString(2);
+    
+    // Get firts block
+    var timeBasedBlockValue = digits(parseInt(nanosBinString.substring(0, nanosBinString.length - 32), 2), 8);
+    timeBasedBlockValue += '-';
+    
+    // Get second block
+    timeBasedBlockValue += digits(parseInt(nanosBinString.substring(0, nanosBinString.length - 16), 2), 4);
+    timeBasedBlockValue += '-';
+    
+    // Get third block: Random part
+    timeBasedBlockValue += digits(parseInt(nanosBinString, 2), 4);
+    
+    return timeBasedBlockValue;
+}
+
+exports.UUID1 = function() {
     
     // Get the current millis
-    var msecs = Date.now();
+    var millis = Date.now();
     
     // Return the value
-    return exports.uuid1_from_millis(msecs);
+    return exports.fromMillisUUID1(millis);
 }
 
-exports.uuid1_from_millis = function(millis) {
+exports.fromMillisUUID1 = function(millis) {
     
+    // Generate the time based blocks
+    var uuidString = getTimeBasedBlocks(millis);
+    uuidString += '-';
+
     // Convert millis to nanos
     var nanos = millis * 10000;
     
     // Add random nanoseconds
-    var random_nanos = randomInt(0, 10000);
-    nanos += random_nanos;
+    var randomNanos = random.randomInt(0, 10000);
+    nanos += randomNanos;
     
     // Convert the nanos to binary string
-    var nanos_bin_string = nanos.toString(2);
-    
-    // Generate the base string
-    var uuid_string = "";
-    
-    // Get firts block
-    var msecs_binary_string_32 = nanos_bin_string.substring(0, nanos_bin_string.length - 32);
-    uuid_string = uuid_string + digits(parseInt(msecs_binary_string_32, 2), 8) + "-";
-    
-    // Get second block
-    var msecs_binary_string_16 = nanos_bin_string.substring(0, nanos_bin_string.length - 16);
-    uuid_string = uuid_string + digits(parseInt(msecs_binary_string_16, 2), 4) + "-";
-    
-    // Get third block
-    uuid_string = uuid_string + digits(parseInt(nanos_bin_string, 2), 4) + "-";
+    var nanosBinString = nanos.toString(2);
     
     // Get forth block
-    uuid_string = uuid_string + digits(parseInt(nanos_bin_string, 2), 4) + "-";
+    uuidString += digits(parseInt(nanosBinString, 2), 4);
+    uuidString += '-';
     
     // Get ffith block
-    uuid_string = uuid_string + digits(parseInt(nanos_bin_string, 2), 12);
+    uuidString += digits(parseInt(nanosBinString, 2), 12);
     
-    return uuid_string;
+    return uuidString;
 }
 
-exports.max_uuid1 = function(millis) {
+exports.maxUUID1 = function(millis) {
     
-    // Convert millis to nanos
-    var nanos = millis * 10000;
+    // Generate the time based blocks
+    var uuidString = getTimeBasedBlocks(millis);
     
-    // Add random nanoseconds
-    var random_nanos = randomInt(0, 10000);
-    nanos += random_nanos;
+    // Add the forth and fifth blocks
+    uuidString += '-ffff-ffffffffffff';
     
-    // Convert the nanos to binary string
-    var nanos_bin_string = nanos.toString(2);
-    
-    // Generate the base string
-    var uuid_string = "";
-    
-    // Get firts block
-    var msecs_binary_string_32 = nanos_bin_string.substring(0, nanos_bin_string.length - 32);
-    uuid_string = uuid_string + digits(parseInt(msecs_binary_string_32, 2), 8) + "-";
-    
-    // Get second block
-    var msecs_binary_string_16 = nanos_bin_string.substring(0, nanos_bin_string.length - 16);
-    uuid_string = uuid_string + digits(parseInt(msecs_binary_string_16, 2), 4) + "-";
-    
-    // Get third block
-    uuid_string = uuid_string + digits(parseInt(nanos_bin_string, 2), 4) + "-";
-    
-    // Get forth block
-    uuid_string = uuid_string + "ffff" + "-";
-    
-    // Get fifth block
-    uuid_string = uuid_string + "ffffffffffff";
-    
-    return uuid_string;
+    return uuidString;
 }
 
-exports.min_uuid1 = function(millis) {
+exports.minUUID1 = function(millis) {
     
-    // Convert millis to nanos
-    var nanos = millis * 10000;
+    // Generate the time based blocks
+    var uuidString = getTimeBasedBlocks(millis);
     
-    // Add random nanoseconds
-    var random_nanos = randomInt(0, 10000);
-    nanos += random_nanos;
+    // Add the forth and fifth blocks
+    uuidString += '-0000-000000000000';
     
-    // Convert the nanos to binary string
-    var nanos_bin_string = nanos.toString(2);
-    
-    // Generate the base string
-    var uuid_string = "";
-    
-    // Get firts block
-    var msecs_binary_string_32 = nanos_bin_string.substring(0, nanos_bin_string.length - 32);
-    uuid_string = uuid_string + digits(parseInt(msecs_binary_string_32, 2), 8) + "-";
-    
-    // Get second block
-    var msecs_binary_string_16 = nanos_bin_string.substring(0, nanos_bin_string.length - 16);
-    uuid_string = uuid_string + digits(parseInt(msecs_binary_string_16, 2), 4) + "-";
-    
-    // Get third block
-    uuid_string = uuid_string + digits(parseInt(nanos_bin_string, 2), 4) + "-";
-    
-    // Get forth block
-    uuid_string = uuid_string + "0000" + "-";
-    
-    // Get fifth block
-    uuid_string = uuid_string + "000000000000";
-    
-    return uuid_string;
+    return uuidString;
 }
