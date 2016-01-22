@@ -3,23 +3,30 @@ var repeat = require('repeat-string');
 
 function digits(value, bytes) {
     
-    // Generate the mask to select the less significative bits
-    var mask = parseInt(repeat('1', bytes * 4), 2);
+    // Converts the value to a string binary representation
+    var binValueStr = value.toString(2);  
     
-    // Generate a secondary mask used to fill with zeros from the left    
-    var secondMask = parseInt('1' + repeat('0', bytes * 4), 2);
+    // Generate an string with zero values    
+    var zeroPad = repeat('0000', digits);
     
-    return ((value & mask) | secondMask).toString(16).substring(1);
+    // Pad the binary value withe the zeros on the left
+    binValueStr = zeroPad + binValueStr;
+ 
+    // Take N bytes from the right, adding a '1' on the left
+    binValueStr = '1' + binValueStr.substring(binValueStr.length - (4 * bytes), binValueStr.length);
+    
+    return parseInt(binValueStr, 2).toString(16).substring(1);   
 }
-
-function getTimeBasedBlocks(millis) {
+        
+function getTimeBasedBlocks(millis, addNanos) {
     
     // Convert millis to nanos
     var nanos = millis * 10000;
     
     // Add random nanoseconds
-    var randomNanos = random.randomInt(0, 10000);
-    nanos += randomNanos;
+    if (addNanos !== 0) {
+        nanos += addNanos;
+    }
     
     // Convert the nanos to binary string
     var nanosBinString = nanos.toString(2);
@@ -49,8 +56,8 @@ exports.UUID1 = function() {
 
 exports.fromMillisUUID1 = function(millis) {
     
-    // Generate the time based blocks
-    var uuidString = getTimeBasedBlocks(millis);
+    // Generate the time based blocks adding a random number of nanoseconds
+    var uuidString = getTimeBasedBlocks(millis, random.randomInt(0, 10000));
     uuidString += '-';
 
     // Convert millis to nanos
@@ -76,7 +83,7 @@ exports.fromMillisUUID1 = function(millis) {
 exports.maxUUID1 = function(millis) {
     
     // Generate the time based blocks
-    var uuidString = getTimeBasedBlocks(millis);
+    var uuidString = getTimeBasedBlocks(millis, 9999);
     
     // Add the forth and fifth blocks
     uuidString += '-ffff-ffffffffffff';
@@ -87,7 +94,7 @@ exports.maxUUID1 = function(millis) {
 exports.minUUID1 = function(millis) {
     
     // Generate the time based blocks
-    var uuidString = getTimeBasedBlocks(millis);
+    var uuidString = getTimeBasedBlocks(millis, 0);
     
     // Add the forth and fifth blocks
     uuidString += '-0000-000000000000';
