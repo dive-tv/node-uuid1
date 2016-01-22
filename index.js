@@ -7,7 +7,7 @@ function digits(value, bytes) {
     var binValueStr = value.toString(2);  
     
     // Generate an string with zero values    
-    var zeroPad = repeat('0000', digits);
+    var zeroPad = repeat('0000', bytes);
     
     // Pad the binary value withe the zeros on the left
     binValueStr = zeroPad + binValueStr;
