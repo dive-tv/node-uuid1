@@ -1,6 +1,6 @@
 {
   "name": "uuid1",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Pseudo version 1 UUID generator",
   "main": "index.js",
   "author": "David Fierro <fierro85@gmail.com> @ Touchvie",
@@ -8,5 +8,8 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/touchvie/node-uuid1.git"
+  },
+  "dependencies": {
+    "repeat-string": "1.5.2"
   }
 }
