@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/touchvie/node-uuid1.git"
+    "url": "git://github.com/dive-tv/node-uuid1.git"
   },
   "dependencies": {
     "repeat-string": "1.5.2"
